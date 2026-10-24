@@ -46,7 +46,9 @@ jobs:
         working-directory: app
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-        run: npm run dist:mac
+        run: |
+          sips -z 512 512 desktop/assets/icon.png --out desktop/assets/icon.png
+          npm run dist:mac
       - uses: actions/upload-artifact@v4
         with:
           name: desktop-${{ runner.os }}
