@@ -1,0 +1,83 @@
+name: Build and release Team Hub
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: team-hub-release
+  cancel-in-progress: false
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify and extract reviewed source
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib, zipfile
+          data = open('team-hub-source.zip','rb').read()
+          assert hashlib.sha256(data).hexdigest() == '1708eb45ed9450438cdcd77b450c722b01220311ed5bd99aad935e1012802597'
+          zipfile.ZipFile('team-hub-source.zip').extractall('app')
+          PY
+      - run: npm ci
+        working-directory: app
+      - name: Check source
+        working-directory: app
+        shell: bash
+        run: |
+          node --check server.js
+          node --check public/app.js
+          node --check public/parent-tracker.js
+          node --check desktop/main.cjs
+      - name: Build Windows
+        if: runner.os == 'Windows'
+        working-directory: app
+        run: npm run dist:win
+      - name: Build macOS universal
+        if: runner.os == 'macOS'
+        working-directory: app
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npm run dist:mac
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ runner.os }}
+          if-no-files-found: error
+          path: |
+            outputs/team-hub-desktop/*.exe
+            outputs/team-hub-desktop/*.dmg
+            outputs/team-hub-desktop/*.zip
+            outputs/team-hub-desktop/*.blockmap
+            outputs/team-hub-desktop/latest*.yml
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Publish complete release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          test -f release-assets/latest.yml
+          test -f release-assets/latest-mac.yml
+          test -f release-assets/Team-Hub-Setup-1.5.3.exe
+          test -f release-assets/Team-Hub-1.5.3-macOS-universal.dmg
+          test -f release-assets/Team-Hub-1.5.3-macOS-universal.zip
+          gh release create v1.5.3 --draft --target "$GITHUB_SHA" --title "Team Hub 1.5.3 — Campaign và cải tiến Dashboard" --notes-file release-notes.md
+          gh release upload v1.5.3 release-assets/*
+          gh release edit v1.5.3 --draft=false --latest
