@@ -10,6 +10,7 @@ function assertRead(route,options={}){
 function install(app,auth){
  const cached=require('./response-cache').createResponseCache();
  app.use((req,res,next)=>{
+  res.set('X-Team-Hub-Version','1.5.4');
   res.set({'X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer','X-Robots-Tag':'noindex, nofollow','Cache-Control':'no-store'});
   if(!['GET','HEAD'].includes(req.method))return res.status(403).json({message:'Guest chỉ xem, không thể thay đổi dữ liệu.'});
   if(!req.path.startsWith('/api/'))return next();
