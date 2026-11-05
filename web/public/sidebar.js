@@ -14,11 +14,12 @@
    collapsed=value;root.classList.toggle('sidebar-collapsed',collapsed);sync();
    try{localStorage.setItem(key,String(collapsed));}catch{}
   };
-  sync();toggle.addEventListener('click',()=>setCollapsed(!collapsed));
+  sync();toggle.addEventListener('click',()=>setCollapsed(!root.classList.contains('sidebar-collapsed')));
   window.addEventListener('storage',event=>{if(event.key===key){collapsed=event.newValue==='true';root.classList.toggle('sidebar-collapsed',collapsed);sync();}});
   const animations=new WeakMap();
   // Animate the native details rows in both directions, including rapid repeat clicks.
   sidebar.addEventListener('click',event=>{
+   collapsed=root.classList.contains('sidebar-collapsed');
    const workspace=event.target.closest('#projectFilter');
    if(collapsed&&workspace){
     event.preventDefault();event.stopPropagation();setCollapsed(false);
