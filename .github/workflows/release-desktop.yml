@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +24,7 @@ jobs:
           python - <<'PY'
           import hashlib, zipfile
           data = open('team-hub-source.zip','rb').read()
-          assert hashlib.sha256(data).hexdigest() == '1708eb45ed9450438cdcd77b450c722b01220311ed5bd99aad935e1012802597'
+          assert hashlib.sha256(data).hexdigest() == '9b7bb455b14620d278c2b80fa3c9a76e06732ccdf1d07065bb1c62982ff2624d'
           zipfile.ZipFile('team-hub-source.zip').extractall('app')
           PY
       - run: npm ci
@@ -76,10 +76,7 @@ jobs:
         shell: bash
         run: |
           test -f release-assets/latest.yml
-          test -f release-assets/latest-mac.yml
-          test -f release-assets/Team-Hub-Setup-1.5.3.exe
-          test -f release-assets/Team-Hub-1.5.3-macOS-universal.dmg
-          test -f release-assets/Team-Hub-1.5.3-macOS-universal.zip
-          gh release create v1.5.3 --draft --target "$GITHUB_SHA" --title "Team Hub 1.5.3 — Campaign và cải tiến Dashboard" --notes-file release-notes.md
-          gh release upload v1.5.3 release-assets/*
-          gh release edit v1.5.3 --draft=false --latest
+          test -f release-assets/Team-Hub-Setup-1.5.4.exe
+          gh release create v1.5.4 --draft --target "$GITHUB_SHA" --title "Team Hub 1.5.4 — Windows: Epic và Calendar" --notes-file release-notes.md
+          gh release upload v1.5.4 release-assets/*
+          gh release edit v1.5.4 --draft=false --latest
