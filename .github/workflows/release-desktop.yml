@@ -19,14 +19,14 @@ jobs:
           python3 - <<'PY'
           import hashlib, zipfile
           data = open('team-hub-source.zip','rb').read()
-          assert hashlib.sha256(data).hexdigest() == '0092bc60f61ac34bed73ff9b97a5b3a3d162f99e8a62f57ac8386fe40ccf3697'
+          assert hashlib.sha256(data).hexdigest() == 'a04734d059770c830941e0d1b5aacd416bbc670dee1dbc787bc5891f99d5b965'
           zipfile.ZipFile('team-hub-source.zip').extractall('app')
           PY
       - run: npm ci
         working-directory: app
       - name: Test authentication and storage
         working-directory: app
-        run: node --test credential-crypto.test.js remember-login.test.js login-ui.test.js desktop-server.test.js
+        run: node --test mac-keychain.test.js session-restore.test.js account-auth.test.js credential-crypto.test.js remember-login.test.js login-ui.test.js desktop-server.test.js
       - name: Build macOS universal
         working-directory: app
         env:
@@ -36,15 +36,15 @@ jobs:
           npm run dist:mac
       - name: Verify packaged fix
         run: |
-          test -f outputs/team-hub-desktop/Team-Hub-1.5.5-macOS-universal.dmg
-          test -f outputs/team-hub-desktop/Team-Hub-1.5.5-macOS-universal.zip
+          test -f outputs/team-hub-desktop/Team-Hub-1.5.6-macOS-universal.dmg
+          test -f outputs/team-hub-desktop/Team-Hub-1.5.6-macOS-universal.zip
           test -f outputs/team-hub-desktop/latest-mac.yml
           node - <<'JS'
           const asar=require('./app/node_modules/@electron/asar');
           const file='outputs/team-hub-desktop/mac-universal/Team Hub.app/Contents/Resources/app.asar';
           const p=JSON.parse(asar.extractFile(file,'package.json'));
-          if(p.version!=='1.5.5'||p.localPreview)throw Error('Wrong package');
-          if(!asar.extractFile(file,'desktop/credential-crypto.cjs').toString().includes('legacyMac'))throw Error('Missing fix');
+          if(p.version!=='1.5.6'||p.localPreview)throw Error('Wrong package');
+          if(!asar.extractFile(file,'desktop/mac-keychain.cjs').toString().includes('THK2'))throw Error('Missing fix');
           JS
       - uses: actions/upload-artifact@v4
         with:
@@ -71,9 +71,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release download v1.5.4 -p 'latest.yml' -p 'Team-Hub-Setup-1.5.4.exe' -p 'Team-Hub-Setup-1.5.4.exe.blockmap' -D release-assets
-          cp team-hub-source.zip release-assets/Team-Hub-Source-1.5.5.zip
+          cp team-hub-source.zip release-assets/Team-Hub-Source-1.5.6.zip
           test -f release-assets/latest-mac.yml
           test -f release-assets/latest.yml
-          gh release create v1.5.5 --draft --target "$GITHUB_SHA" --title "Team Hub 1.5.5 — macOS: Ghi nhớ đăng nhập" --notes-file release-notes.md
-          gh release upload v1.5.5 release-assets/*
-          gh release edit v1.5.5 --draft=false --latest
+          gh release create v1.5.6 --draft --target "$GITHUB_SHA" --title "Team Hub 1.5.6 — macOS: Ghi nhớ không giới hạn" --notes-file release-notes.md
+          gh release upload v1.5.6 release-assets/*
+          gh release edit v1.5.6 --draft=false --latest
+
