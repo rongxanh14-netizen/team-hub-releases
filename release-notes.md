@@ -1,13 +1,17 @@
-## macOS 1.5.5
-- Sửa nhánh ghi nhớ email/API Jira: dùng API Keychain tương thích Electron 44 trên macOS, kiểm tra mã hóa/giải mã trước khi bật ghi nhớ.
-- Tăng thời gian chờ kho bảo mật lên 120 giây; sửa hướng dẫn đang ghi Windows.
-- Giữ tất cả cải tiến Dashboard, Epic, Calendar và Campaign của 1.5.4.
-- Token vẫn được mã hóa trên máy. Không có thông tin đăng nhập/cấu hình team nội bộ trong bộ cài.
+## macOS 1.5.6 — Ghi nhớ đăng nhập không giới hạn
+- Thay nhánh lưu khóa trên Mac bằng Keychain thông qua công cụ /usr/bin/security có sẵn của Apple, không phụ thuộc danh tính ký của Electron safeStorage.
+- Email/API token được mã hóa AES-256-GCM; khóa nằm trong Keychain. Không lưu token hay khóa mã hóa dạng văn bản vào file, log hoặc tham số dòng lệnh.
+- Ghi nhớ không có ngày hết hạn trong Team Hub. Khôi phục khi mở app kể cả cookie đã hết hạn hoặc bị xóa; chỉ app desktop được phép khôi phục.
+- Khi phiên 8 giờ hết hạn, tự xác thực lại bằng thông tin đã ghi nhớ và tiếp tục thao tác, không bắt nhập API lại.
+- Mất mạng hoặc Keychain đang khóa không xóa thông tin đã lưu. Hiển thị tùy chọn Ghi nhớ trên app thay vì âm thầm ẩn.
+- Đăng xuất sẽ xóa thông tin ghi nhớ. Vẫn cần nhập API mới nếu Jira thu hồi/hết hạn token hoặc người dùng xóa dữ liệu app/Keychain.
 
 ### Cài trên Mac
-Tải **Team-Hub-1.5.5-macOS-universal.dmg** (Intel và Apple Silicon), đóng Team Hub, kéo app vào Applications để thay bản cũ, rồi mở lại. Nếu Keychain hỏi quyền, cho phép Team Hub để dùng Ghi nhớ đăng nhập.
+Tải **Team-Hub-1.5.6-macOS-universal.dmg** (Intel và Apple Silicon), đóng app, kéo Team Hub vào Applications và thay bản cũ. Bật **Ghi nhớ đăng nhập** khi đăng nhập. Bản cũ chưa lưu thành công thì cần nhập email/API một lần sau khi nâng cấp.
 
-Bản này chưa được ký Developer ID/notarize. Vì vậy chưa đảm bảo auto-install trong app macOS; dùng DMG để cập nhật. Kiểm thử tự động chạy trên macOS; vẫn cần xác nhận lưu đăng nhập trên Keychain của máy người dùng.
+Kiểm thử bao gồm Keychain thật trên macOS trong kho test riêng, đọc lại qua tiến trình mới, giả lập nhiều năm sau, tự khôi phục phiên, logout và lỗi mạng. Không thử bằng API Jira cá nhân trên CI.
+
+Chưa có Developer ID/notarization; cập nhật bằng DMG, chưa bảo đảm tự cài cập nhật trong app Mac.
 
 ### Windows
-Windows vẫn là **1.5.4**. Bộ cài và latest.yml 1.5.4 được giữ trong release này để kênh cập nhật Windows tiếp tục hoạt động.
+Giữ bộ cài và kênh cập nhật **Windows 1.5.4**. Không có cấu hình team hay API Jira cá nhân trong source/bộ cài công khai.
